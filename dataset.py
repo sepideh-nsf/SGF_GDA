@@ -15,7 +15,7 @@ from data_utils import normalize_feat, rand_train_test_idx
 from sklearn.preprocessing import label_binarize
 from torch_geometric.datasets import Planetoid
 
-DATAPATH = '../../data/'
+DATAPATH = './GDA_MatData'
 
 class NCDataset(object):
     def __init__(self, name, root=f'{DATAPATH}'):
@@ -92,8 +92,31 @@ def load_nc_dataset(args):
     elif dataname in ('chameleon', 'squirrel'):
         dataset=load_wiki_new(dataname,args.no_feat_norm)
         # dataset = load_wikipedia(dataname,args.no_feat_norm)
+    elif dataname in ('acmv9','Blog1','Blog2','citationv1','dblpv7','squirrel1','squirrel2'):
+        dataset=load_GDA_dataset(dataname)
     else:
         raise ValueError('Invalid dataname')
+    return dataset
+
+#For GDA Datasets
+def load_GDA_dataset(filename):
+
+    # filename = 'deezer-europe'
+    dataset = NCDataset(filename)
+    Data = scipy.io.loadmat(f'./GDA_MatData/{filename}.mat')
+
+    A, label, features = Data['network'], Data['group'], Data['attrb']
+    label=np.argmax(label, axis=1)
+    edge_index = torch.tensor(A.nonzero(), dtype=torch.long)
+    node_feat = torch.tensor(features.todense(), dtype=torch.float)
+    label = torch.tensor(label, dtype=torch.long).squeeze()
+    num_nodes = label.shape[0]
+
+    dataset.graph = {'edge_index': edge_index,
+                     'edge_feat': None,
+                     'node_feat': node_feat,
+                     'num_nodes': num_nodes}
+    dataset.label = label
     return dataset
 
 

@@ -3,6 +3,7 @@ import copy
 import os
 import random
 import sys
+import time
 import warnings
 
 import numpy as np
@@ -111,7 +112,7 @@ else:
         model.parameters(), weight_decay=args.weight_decay, lr=args.lr)
 
 for run in range(args.runs):
-    if args.dataset in ['cora', 'citeseer', 'pubmed'] and args.protocol == 'semi':
+    if args.dataset in ['cora', 'citeseer', 'pubmed','acmv9'] and args.protocol == 'semi':
         split_idx = split_idx_lst[0]
     else:
         split_idx = split_idx_lst[run]
@@ -184,7 +185,8 @@ def make_print(method):
 
 file_name = f'{args.dataset}_{args.method}'
 if args.method == 'ours' and args.use_graph:
-    file_name += '_' + args.backbone
+
+    file_name += '_' + args.backbone+'_LR'+str(args.lr)+'_dropout'+str(args.dropout)+'_graphWeight'+str(args.graph_weight)+'_'+str(time.time())
 file_name += '.txt'
 out_path = os.path.join(out_folder, file_name)
 with open(out_path, 'a+') as f:
